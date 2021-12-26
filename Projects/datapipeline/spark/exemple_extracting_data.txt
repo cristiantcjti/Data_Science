@@ -1,0 +1,127 @@
+>>> df = spark.read.json("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/twitter_aluraonline")
+>>> df.printSchema()
+root
+ |-- data: array (nullable = true)
+ |    |-- element: struct (containsNull = true)
+ |    |    |-- author_id: string (nullable = true)
+ |    |    |-- conversation_id: string (nullable = true)
+ |    |    |-- created_at: string (nullable = true)
+ |    |    |-- id: string (nullable = true)
+ |    |    |-- in_reply_to_user_id: string (nullable = true)
+ |    |    |-- public_metrics: struct (nullable = true)
+ |    |    |    |-- like_count: long (nullable = true)
+ |    |    |    |-- quote_count: long (nullable = true)
+ |    |    |    |-- reply_count: long (nullable = true)
+ |    |    |    |-- retweet_count: long (nullable = true)
+ |    |    |-- text: string (nullable = true)
+ |-- includes: struct (nullable = true)
+ |    |-- users: array (nullable = true)
+ |    |    |-- element: struct (containsNull = true)
+ |    |    |    |-- created_at: string (nullable = true)
+ |    |    |    |-- id: string (nullable = true)
+ |    |    |    |-- name: string (nullable = true)
+ |    |    |    |-- username: string (nullable = true)
+ |-- meta: struct (nullable = true)
+ |    |-- newest_id: string (nullable = true)
+ |    |-- next_token: string (nullable = true)
+ |    |-- oldest_id: string (nullable = true)
+ |    |-- result_count: long (nullable = true)
+ |-- extract_date: date (nullable = true)
+
+>>> df.select("data.id").show(1, False)
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|id                                                                                                                                                                                                                |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|[1470119738227499015, 1470027917396742150, 1469794633521709056, 1469748010351538188, 1469747434288996362, 1469738554741903371, 1469738337275715586, 1469735064082735105, 1469708338338402312, 1469663381107916801]|
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+only showing top 1 row
+
+>>> from pyspark.sql import functions as f 
+>>> df.select(f.explode("data")).show(1)
++--------------------+
+|                 col|
++--------------------+
+|{3388455497, 1470...|
++--------------------+
+only showing top 1 row
+
+>>> df.select(f.explode("data")).show(1, False)
++---------------------------------------------------------------------------------------------------------------------------------------------------+
+|col                                                                                                                                                |
++---------------------------------------------------------------------------------------------------------------------------------------------------+
+|{3388455497, 1470119738227499015, 2021-12-12T19:53:53.000Z, 1470119738227499015, null, {0, 0, 0, 0}, tô feliz @AluraOnline https://t.co/Szgb2d25OM}|
++---------------------------------------------------------------------------------------------------------------------------------------------------+
+only showing top 1 row
+
+>>> df.select(f.explode("data")).printSchema()
+root
+ |-- col: struct (nullable = true)
+ |    |-- author_id: string (nullable = true)
+ |    |-- conversation_id: string (nullable = true)
+ |    |-- created_at: string (nullable = true)
+ |    |-- id: string (nullable = true)
+ |    |-- in_reply_to_user_id: string (nullable = true)
+ |    |-- public_metrics: struct (nullable = true)
+ |    |    |-- like_count: long (nullable = true)
+ |    |    |-- quote_count: long (nullable = true)
+ |    |    |-- reply_count: long (nullable = true)
+ |    |    |-- retweet_count: long (nullable = true)
+ |    |-- text: string (nullable = true)
+
+>>> tweet_df = df.select(f.explode("data").alias("tweets")).select("tweets.*").show(1, False)
++----------+-------------------+------------------------+-------------------+-------------------+--------------+---------------------------------------------+
+|author_id |conversation_id    |created_at              |id                 |in_reply_to_user_id|public_metrics|text                                         |
++----------+-------------------+------------------------+-------------------+-------------------+--------------+---------------------------------------------+
+|3388455497|1470119738227499015|2021-12-12T19:53:53.000Z|1470119738227499015|null               |{0, 0, 0, 0}  |tô feliz @AluraOnline https://t.co/Szgb2d25OM|
++----------+-------------------+------------------------+-------------------+-------------------+--------------+---------------------------------------------+
+only showing top 1 row
+
+>>> tweet_df = df.select(f.explode("data").alias("tweets")).select("tweets.author_id", "tweets.conversation_id", "tweets.created_at", "tweets.id", "tweets.in_reply_to_user_id", "tweets.public_metrics.*", "tweets.text")
+>>> tweet_df.printSchema()
+root
+ |-- author_id: string (nullable = true)
+ |-- conversation_id: string (nullable = true)
+ |-- created_at: string (nullable = true)
+ |-- id: string (nullable = true)
+ |-- in_reply_to_user_id: string (nullable = true)
+ |-- like_count: long (nullable = true)
+ |-- quote_count: long (nullable = true)
+ |-- reply_count: long (nullable = true)
+ |-- retweet_count: long (nullable = true)
+ |-- text: string (nullable = true)
+
+>>> tweet_df.show()
++-------------------+-------------------+--------------------+-------------------+-------------------+----------+-----------+-----------+-------------+--------------------+
+|          author_id|    conversation_id|          created_at|                 id|in_reply_to_user_id|like_count|quote_count|reply_count|retweet_count|                text|
++-------------------+-------------------+--------------------+-------------------+-------------------+----------+-----------+-----------+-------------+--------------------+
+|         3388455497|1470119738227499015|2021-12-12T19:53:...|1470119738227499015|               null|         0|          0|          0|            0|tô feliz @AluraOn...|
+|1221858515872108544|1469888815934414855|2021-12-12T13:49:...|1470027917396742150|1150841586164613120|         1|          0|          0|            0|@clarahr11 Me man...|
+|1454110870322225153|1469296965297004549|2021-12-11T22:22:...|1469794633521709056|         1566580880|         0|          0|          0|            0|@AluraOnline Gent...|
+| 851514023573151744|1469748010351538188|2021-12-11T19:16:...|1469748010351538188|               null|         0|          0|          0|            0|hj eu consegui re...|
+|           40593343|1469747434288996362|2021-12-11T19:14:...|1469747434288996362|               null|         5|          0|          0|            0|Mais uma formação...|
+|         3433462486|1469738554741903371|2021-12-11T18:39:...|1469738554741903371|               null|         0|          0|          0|            4|RT @paulo_caelum:...|
+|         1419272082|1469738330967392257|2021-12-11T18:38:...|1469738337275715586|         1419272082|         1|          0|          1|            0|Porque o nosso mu...|
+| 994434432508551169|1469735064082735105|2021-12-11T18:25:...|1469735064082735105|               null|         0|          0|          0|            0|com as demandas d...|
+|          591201415|1469708338338402312|2021-12-11T16:39:...|1469708338338402312|               null|         2|          0|          0|            0|A @aluraonline é ...|
+|           39289766|1469663381107916801|2021-12-11T13:40:...|1469663381107916801|         1566580880|         1|          0|          1|            0|@AluraOnline \nVo...|
+|           43900459|1468216733647491077|2021-12-11T13:07:...|1469655101706948611|         3449324963|         2|          0|          0|            0|@debiscamacho @gi...|
+|          215374236|1469125529605394433|2021-12-11T05:31:...|1469540372334485506|1349899149517402117|         1|          0|          0|            0|@scorpelini @paul...|
+|1349899149517402117|1469125529605394433|2021-12-11T03:56:...|1469516512373485568|          215374236|         2|          0|          1|            0|@cviniciussdias @...|
+|         1348144224|1469368139922223110|2021-12-11T01:04:...|1469473031227645954|           13769472|         0|          0|          0|            0|@oatila Valeu @Ca...|
+|         3138046132|1469467990005628932|2021-12-11T00:44:...|1469467990005628932|         1566580880|         0|          0|          0|            0|@AluraOnline quan...|
+|1026138149943222272|1469296965297004549|2021-12-10T23:48:...|1469454005348847616|         1566580880|         0|          0|          0|            0|@AluraOnline Quan...|
+|           82350646|1469444998114516993|2021-12-10T23:12:...|1469444998114516993|               null|         0|          0|          0|            4|RT @paulo_caelum:...|
+|           82350646|1469444965239513096|2021-12-10T23:12:...|1469444965239513096|               null|         0|          0|          0|            2|RT @AluraOnline: ...|
+|           82350646|1469443014565244937|2021-12-10T23:04:...|1469443014565244937|               null|         0|          0|          0|            1|RT @AluraOnline: ...|
+|          591201415|1469430329169612802|2021-12-10T22:14:...|1469430329169612802|               null|         0|          0|          0|            3|RT @frontinsp: É ...|
++-------------------+-------------------+--------------------+-------------------+-------------------+----------+-----------+-----------+-------------+--------------------+
+only showing top 20 rows
+>>> user_df = df.select(f.explode("includes.users").alias("users")).select("users.*")
+>>> user_df.printSchema()
+root
+ |-- created_at: string (nullable = true)
+ |-- id: string (nullable = true)
+ |-- name: string (nullable = true)
+ |-- username: string (nullable = true)
+
+>>> 

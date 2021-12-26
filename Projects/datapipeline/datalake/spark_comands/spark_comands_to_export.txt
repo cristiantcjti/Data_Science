@@ -1,0 +1,31 @@
+>>> df = spark.read.json("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/twitter_aluraonline/extract_date=2021-12-10")
+>>> from pyspark.sql.functions import explode
+>>> tweet_df = df.select(explode("data").alias("tweets")).select("tweets.author_id","tweets.created_at", "tweets.conversation_id", "tweets.in_reply_to_user_id", "tweets.id", "tweets.text", "tweets.public_metrics.*")
+>>> tweet_df.printSchema()        root
+ |-- author_id: string (nullable = true)
+ |-- created_at: string (nullable = true)
+ |-- conversation_id: string (nullable = true)
+ |-- in_reply_to_user_id: string (nullable = true)
+ |-- id: string (nullable = true)
+ |-- text: string (nullable = true)
+ |-- like_count: long (nullable = true)
+ |-- quote_count: long (nullable = true)
+ |-- reply_count: long (nullable = true)
+ |-- retweet_count: long (nullable = true)
+
+>>> tweet_df.write.csv("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export")
+>>> tweet_df.write.option("header", True).csv("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/spark-3.2.0-bin-hadoop3.2/python/pyspark/sql/readwriter.py", line 955, in csv
+    self._jwrite.csv(path)
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/spark-3.2.0-bin-hadoop3.2/python/lib/py4j-0.10.9.2-src.zip/py4j/java_gateway.py", line 1310, in __call__
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/spark-3.2.0-bin-hadoop3.2/python/pyspark/sql/utils.py", line 117, in deco
+    raise converted from None
+pyspark.sql.utils.AnalysisException: path file:/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export already exists.
+>>> tweet_df.write.mode("overwrite").option("header", True).csv("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export")
+>>> tweet_df.rdd.getNumPartitions()
+1
+>>> tweet_df.repartition(2).write.mode("overwrite").option("header", True).csv("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export2")
+>>> tweet_df.repartition(5).coalesce(2).write.mode("overwrite").option("header", True).csv("/home/cristian/Desktop/Data_Science/Projects/datapipeline/datalake/export2")
+>>> 

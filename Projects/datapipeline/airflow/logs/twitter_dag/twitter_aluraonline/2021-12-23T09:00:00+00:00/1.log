@@ -1,0 +1,46 @@
+[2021-12-26 18:37:59,258] {taskinstance.py:670} INFO - Dependencies all met for <TaskInstance: twitter_dag.twitter_aluraonline 2021-12-23T09:00:00+00:00 [queued]>
+[2021-12-26 18:37:59,277] {taskinstance.py:670} INFO - Dependencies all met for <TaskInstance: twitter_dag.twitter_aluraonline 2021-12-23T09:00:00+00:00 [queued]>
+[2021-12-26 18:37:59,277] {taskinstance.py:880} INFO - 
+--------------------------------------------------------------------------------
+[2021-12-26 18:37:59,277] {taskinstance.py:881} INFO - Starting attempt 1 of 1
+[2021-12-26 18:37:59,277] {taskinstance.py:882} INFO - 
+--------------------------------------------------------------------------------
+[2021-12-26 18:37:59,295] {taskinstance.py:901} INFO - Executing <Task(TwitterOperator): twitter_aluraonline> on 2021-12-23T09:00:00+00:00
+[2021-12-26 18:37:59,300] {standard_task_runner.py:54} INFO - Started process 33217 to run task
+[2021-12-26 18:37:59,391] {standard_task_runner.py:77} INFO - Running: ['airflow', 'run', 'twitter_dag', 'twitter_aluraonline', '2021-12-23T09:00:00+00:00', '--job_id', '8', '--pool', 'default_pool', '--raw', '-sd', 'DAGS_FOLDER/twitter_dag.py', '--cfg_path', '/tmp/tmp1e5dqjzx']
+[2021-12-26 18:37:59,392] {standard_task_runner.py:78} INFO - Job 8: Subtask twitter_aluraonline
+[2021-12-26 18:37:59,413] {logging_mixin.py:112} INFO - Running <TaskInstance: twitter_dag.twitter_aluraonline 2021-12-23T09:00:00+00:00 [running]> on host note-cristian-agriness
+[2021-12-26 18:37:59,456] {base_hook.py:89} INFO - Using connection to: id: twitter_default. Host: https://api.twitter.com, Port: None, Schema: None, Login: None, Password: None, extra: XXXXXXXX
+[2021-12-26 18:37:59,462] {twitter_hook.py:38} INFO - URL: https://api.twitter.com/2/tweets/search/recent?query=AluraOnline&tweet.fields=author_id,conversation_id,created_at,id,in_reply_to_user_id,public_metrics,text&expansions=author_id&user.fields=id,name,username,created_at&start_time={'2021-12-23T09:00:00.00Z'}&end_time={'2021-12-24T09:00:00.00Z'}
+[2021-12-26 18:37:59,484] {logging_mixin.py:112} WARNING - /home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/urllib3/connectionpool.py:988: InsecureRequestWarning: Unverified HTTPS request is being made to host 'api.twitter.com'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+  InsecureRequestWarning,
+[2021-12-26 18:37:59,667] {http_hook.py:150} ERROR - HTTP error: Bad Request
+[2021-12-26 18:37:59,668] {http_hook.py:151} ERROR - {"errors":[{"parameters":{"start_time":["{'2021-12-23T09:00:00.00Z'}"]},"message":"The `start_time` query parameter value [{'2021-12-23T09:00:00.00Z'}] is not a valid RFC3339 date-time."},{"parameters":{"end_time":["{'2021-12-24T09:00:00.00Z'}"]},"message":"The `end_time` query parameter value [{'2021-12-24T09:00:00.00Z'}] is not a valid RFC3339 date-time."}],"title":"Invalid Request","detail":"One or more parameters to your request was invalid.","type":"https://api.twitter.com/2/problems/invalid-request"}
+[2021-12-26 18:37:59,739] {taskinstance.py:1150} ERROR - 400:Bad Request
+Traceback (most recent call last):
+  File "/home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/airflow/hooks/http_hook.py", line 148, in check_response
+    response.raise_for_status()
+  File "/home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/requests/models.py", line 941, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 400 Client Error: Bad Request for url: https://api.twitter.com/2/tweets/search/recent?query=AluraOnline&tweet.fields=author_id,conversation_id,created_at,id,in_reply_to_user_id,public_metrics,text&expansions=author_id&user.fields=id,name,username,created_at&start_time=%7B'2021-12-23T09:00:00.00Z'%7D&end_time=%7B'2021-12-24T09:00:00.00Z'%7D
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/airflow/models/taskinstance.py", line 984, in _run_raw_task
+    result = task_copy.execute(context=context)
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/airflow/plugins/operators/twitter_operator.py", line 55, in execute
+    for pg in hook.run():
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/airflow/plugins/hooks/twitter_hook.py", line 58, in run
+    yield from self.paginate(url, session)
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/airflow/plugins/hooks/twitter_hook.py", line 47, in paginate
+    data = self.connect_to_endpoint(full_url, session)
+  File "/home/cristian/Desktop/Data_Science/Projects/datapipeline/airflow/plugins/hooks/twitter_hook.py", line 39, in connect_to_endpoint
+    return self.run_and_check(session, prep, {}).json()
+  File "/home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/airflow/hooks/http_hook.py", line 181, in run_and_check
+    self.check_response(response)
+  File "/home/cristian/Desktop/datapipeline/.env/lib/python3.6/site-packages/airflow/hooks/http_hook.py", line 152, in check_response
+    raise AirflowException(str(response.status_code) + ":" + response.reason)
+airflow.exceptions.AirflowException: 400:Bad Request
+[2021-12-26 18:37:59,741] {taskinstance.py:1194} INFO - Marking task as FAILED. dag_id=twitter_dag, task_id=twitter_aluraonline, execution_date=20211223T090000, start_date=20211226T213759, end_date=20211226T213759
+[2021-12-26 18:38:04,226] {local_task_job.py:102} INFO - Task exited with return code 1
